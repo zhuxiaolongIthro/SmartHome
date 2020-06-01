@@ -2,13 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.xiaoxiao.homecenter">
 
-
-
+    <uses-permission android:name="com.google.android.things.permission.USE_PERIPHERAL_IO"/>
     <application android:label="@string/app_name">
+        <service
+            android:name=".services.PeripheralService"
+            android:process="com.xiaoxiao.peripheral"
+            android:enabled="true"
+            android:exported="true"/>
         <service
             android:name="com.xiaoxiao.baselibrary.base.BaseService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
         <service
             android:name="com.xiaoxiao.baselibrary.ble.BleCenterService"
             android:enabled="true"
@@ -16,7 +20,9 @@
 
         <uses-library android:name="com.google.android.things" />
 
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

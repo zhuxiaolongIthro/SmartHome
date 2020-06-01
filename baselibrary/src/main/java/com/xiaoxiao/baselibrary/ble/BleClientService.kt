@@ -19,8 +19,8 @@ class BleClientService : BaseService() {
     val TAG ="BleClientService"
     companion object {
         const val SERVICE_TRANSFER_MSG_UUID = "3518d48c-ea83-495c-922d-273a0d4e21ca"
-        const val CHARTRANSFER_MSG_NOTIFY_UUID = "3518d48c-ea83-495c-922d-273a0d4e21ca"
-        const val CHARTRANSFER_MSG_WRITE_UUID = "3518d48c-ea83-495c-922d-273a0d4e21ca"
+        const val CHARTRANSFER_MSG_NOTIFY_UUID = "3518d48a-ea83-495c-922d-273a0d4e21cb"
+        const val CHARTRANSFER_MSG_WRITE_UUID = "3518d48b-ea83-495c-922d-273a0d4e21cc"
     }
 
     private lateinit var mCallback: IBleServiceCallback

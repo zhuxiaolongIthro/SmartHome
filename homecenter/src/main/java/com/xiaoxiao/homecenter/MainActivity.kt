@@ -1,7 +1,18 @@
 package com.xiaoxiao.homecenter
 
+import android.app.Service
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.IBinder
+import com.xiaoxiao.baselibrary.ble.BleCenterService
+import com.xiaoxiao.baselibrary.ble.BleClientService
+import com.xiaoxiao.baselibrary.ble.IBleService
+import com.xiaoxiao.baselibrary.ble.IBleServiceCallback
+import com.xiaoxiao.baselibrary.wifip2p.WifiP2pService
+import com.xiaoxiao.homecenter.services.PeripheralService
 
 /**
  * Skeleton of an Android Things activity.
@@ -19,8 +30,68 @@ import android.os.Bundle
  */
 class MainActivity : AppCompatActivity() {
 
+
+    lateinit var iBinder:IBleService
+
+
+
+    val mCallback =BleServiceCallback()
+
+    private val bleConn = object :ServiceConnection{
+        override fun onServiceDisconnected(name: ComponentName?) {
+            iBinder.stopAdvertise()
+
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            iBinder = IBleService.Stub.asInterface(service)
+            iBinder.registCallback(mCallback)
+            iBinder.startAdvertise()
+        }
+    }
+
+    private val peripheralConn = object :ServiceConnection{
+        override fun onServiceDisconnected(name: ComponentName?) {
+
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+
+        }
+
+    }
+
+    private val wifip2pCoon = object :ServiceConnection{
+        override fun onServiceDisconnected(name: ComponentName?) {
+
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+
+        }
+
+    }
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val intent = Intent(this, BleCenterService::class.java)
+
+        bindService(intent,bleConn,Service.BIND_AUTO_CREATE)
+
+        val sensorIntent = Intent(this,PeripheralService::class.java)
+        bindService(sensorIntent,peripheralConn,Service.BIND_AUTO_CREATE)
+
+        val wifiIntent = Intent(this,WifiP2pService::class.java)
+        bindService(wifiIntent,wifip2pCoon,Service.BIND_AUTO_CREATE)
+    }
+
+    override fun onDestroy() {
+        unbindService(bleConn)
+        unbindService(peripheralConn)
+        unbindService(wifip2pCoon)
+        super.onDestroy()
     }
 }
