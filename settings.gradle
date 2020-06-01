@@ -1,0 +1,6 @@
+rootProject.name='SmartHome'
+include ':homecenter'
+include ':BleProtocollib'
+include ':phoneapp'
+include ':watchapp'
+include ':baselibrary'
