@@ -2,13 +2,18 @@ package com.xiaoxiao.homecenter
 
 import android.app.Service
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.wifi.WifiManager
+import android.net.wifi.p2p.WifiP2pManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import androidx.core.content.ContextCompat
 import com.xiaoxiao.baselibrary.ble.BleCenterService
 import com.xiaoxiao.baselibrary.ble.IBleService
+import com.xiaoxiao.baselibrary.wlan.IWlanP2pServiceAidl
 import com.xiaoxiao.baselibrary.wlan.WLANService
 import com.xiaoxiao.homecenter.services.PeripheralService
 
@@ -30,8 +35,6 @@ class MainActivity : AppCompatActivity() {
 
 
     lateinit var iBinder:IBleService
-
-
 
     val mCallback =BleServiceCallback()
 
@@ -59,18 +62,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private val wifip2pCoon = object :ServiceConnection{
-        override fun onServiceDisconnected(name: ComponentName?) {
-
-        }
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-
-        }
-
-    }
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,14 +73,17 @@ class MainActivity : AppCompatActivity() {
         val sensorIntent = Intent(this,PeripheralService::class.java)
         bindService(sensorIntent,peripheralConn,Service.BIND_AUTO_CREATE)
 
-        val wifiIntent = Intent(this,WLANService::class.java)
-        bindService(wifiIntent,wifip2pCoon,Service.BIND_AUTO_CREATE)
+        val wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+
+        if (!wifiManager.isP2pSupported) {
+            return
+        }
     }
 
     override fun onDestroy() {
         unbindService(bleConn)
         unbindService(peripheralConn)
-        unbindService(wifip2pCoon)
         super.onDestroy()
     }
 }

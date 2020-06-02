@@ -11,8 +11,11 @@ import com.google.android.things.pio.Gpio
 import com.google.android.things.pio.GpioCallback
 import com.google.android.things.pio.PeripheralManager
 import com.google.android.things.userdriver.UserDriverManager
+import com.google.android.things.userdriver.pio.GpioDriver
 import com.xiaoxiao.baselibrary.base.BaseService
 import com.xiaoxiao.homecenter.IPeripheralServiceCallback
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  *  硬件设备服务
@@ -50,7 +53,7 @@ class PeripheralService : BaseService() {
     val mGpioCallback = object :GpioCallback{
         override fun onGpioEdge(gpio: Gpio?): Boolean {
             Log.i("PeripheralService","onGpioEdge ${gpio?.name} ${gpio?.value}")
-            return false
+            return true
         }
 
         override fun onGpioError(gpio: Gpio?, error: Int) {
@@ -67,18 +70,30 @@ class PeripheralService : BaseService() {
         userDriverManager = UserDriverManager.getInstance()
 
         for (gpioName in peripheralManager.gpioList) {
-//            Log.i("PeripheralService","gpio : $gpioName")
             val openedGpio = peripheralManager.openGpio(gpioName)
-            openedGpio.setActiveType(Gpio.ACTIVE_LOW)//设置为高电平 有效
+            openedGpio.setActiveType(Gpio.ACTIVE_HIGH)//设置为高电平 有效
+            openedGpio.setDirection(Gpio.DIRECTION_IN)
+            openedGpio.setEdgeTriggerType(Gpio.EDGE_BOTH)
             openedGpio.registerGpioCallback(listenerHandler,mGpioCallback)
             gpioList.add(openedGpio)
         }
-
         for (gpio in gpioList) {
             Log.i("PeripheralService","gpio value  ${gpio.name} : ${gpio.value}")
         }
-
+//        timer.schedule(timerTask,0,2000)
     }
+    val timerTask =object :TimerTask(){
+        override fun run() {
+            for (gpio in gpioList) {
+                if (gpio.name.equals("BCM26")) {
+                    val old=gpio.value
+                    gpio.value = !old
+                }
+            }
+        }
+    }
+
+    var timer = Timer()
 
     override fun onBind(intent: Intent): IBinder {
         return iBinder
