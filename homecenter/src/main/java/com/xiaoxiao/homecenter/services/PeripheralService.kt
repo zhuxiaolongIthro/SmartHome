@@ -12,6 +12,7 @@ import com.google.android.things.pio.GpioCallback
 import com.google.android.things.pio.PeripheralManager
 import com.google.android.things.userdriver.UserDriverManager
 import com.google.android.things.userdriver.pio.GpioDriver
+import com.google.android.things.userdriver.sensor.UserSensor
 import com.xiaoxiao.baselibrary.base.BaseService
 import com.xiaoxiao.homecenter.IPeripheralServiceCallback
 import java.util.*
@@ -23,16 +24,14 @@ import kotlin.collections.ArrayList
  * */
 class PeripheralService : BaseService() {
 
-    lateinit var peripheralManager:PeripheralManager
-    lateinit var userDriverManager:UserDriverManager
+    lateinit var peripheralManager: PeripheralManager
+    lateinit var userDriverManager: UserDriverManager
 
 
+    lateinit var mCallback: IPeripheralServiceCallback
 
 
-    lateinit var mCallback:IPeripheralServiceCallback
-
-
-    val iBinder:IBinder = object :IPeripheralServiceAIDL.Stub(){
+    val iBinder: IBinder = object : IPeripheralServiceAIDL.Stub() {
         override fun basicTypes(
             anInt: Int,
             aLong: Long,
@@ -50,50 +49,58 @@ class PeripheralService : BaseService() {
 
     val listenerHandler = Handler(handlerThread.looper)
 
-    val mGpioCallback = object :GpioCallback{
+    val mGpioCallback = object : GpioCallback {
         override fun onGpioEdge(gpio: Gpio?): Boolean {
-            Log.i("PeripheralService","onGpioEdge ${gpio?.name} ${gpio?.value}")
+            Log.i("PeripheralService", "onGpioEdge ${gpio?.name} ${gpio?.value}")
+            if (gpio?.name.equals("BCM26")) {
+                if (gpio?.value == true) {
+                    openLed()
+                }else{
+                    closeLed()
+                }
+            }
             return true
         }
 
         override fun onGpioError(gpio: Gpio?, error: Int) {
 //            super.onGpioError(gpio, error)
-            Log.i("PeripheralService","onGpioError ${gpio?.name} ${gpio?.value} error $error")
+
+            Log.i("PeripheralService", "onGpioError ${gpio?.name} ${gpio?.value} error $error")
         }
     }
 
-    val gpioList=ArrayList<Gpio>()
+    val gpioList = ArrayList<Gpio>()
+
+    private fun openLed() {
+        Log.i("PeripheralService","openLed ")
+        LED_OUTPUT.value = true
+    }
+
+    private fun closeLed() {
+        Log.i("PeripheralService","closeLed")
+        LED_OUTPUT.value = false
+    }
+
+    lateinit var AM312_INPUT: Gpio
+    lateinit var LED_OUTPUT: Gpio
 
     override fun onCreate() {
         super.onCreate()
         peripheralManager = PeripheralManager.getInstance()
         userDriverManager = UserDriverManager.getInstance()
 
-        for (gpioName in peripheralManager.gpioList) {
-            val openedGpio = peripheralManager.openGpio(gpioName)
-            openedGpio.setActiveType(Gpio.ACTIVE_HIGH)//设置为高电平 有效
-            openedGpio.setDirection(Gpio.DIRECTION_IN)
-            openedGpio.setEdgeTriggerType(Gpio.EDGE_BOTH)
-            openedGpio.registerGpioCallback(listenerHandler,mGpioCallback)
-            gpioList.add(openedGpio)
-        }
-        for (gpio in gpioList) {
-            Log.i("PeripheralService","gpio value  ${gpio.name} : ${gpio.value}")
-        }
-//        timer.schedule(timerTask,0,2000)
-    }
-    val timerTask =object :TimerTask(){
-        override fun run() {
-            for (gpio in gpioList) {
-                if (gpio.name.equals("BCM26")) {
-                    val old=gpio.value
-                    gpio.value = !old
-                }
-            }
-        }
-    }
+        AM312_INPUT = peripheralManager.openGpio("BCM26")
+        AM312_INPUT.setActiveType(Gpio.ACTIVE_HIGH)//设置为高电平 有效
+        AM312_INPUT.setDirection(Gpio.DIRECTION_IN)
+        AM312_INPUT.setEdgeTriggerType(Gpio.EDGE_BOTH)
+        AM312_INPUT.registerGpioCallback(listenerHandler, mGpioCallback)
 
-    var timer = Timer()
+
+        LED_OUTPUT = peripheralManager.openGpio("BCM13")
+        LED_OUTPUT.setActiveType(Gpio.ACTIVE_HIGH)//设置为高电平 有效
+        LED_OUTPUT.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
+
+    }
 
     override fun onBind(intent: Intent): IBinder {
         return iBinder

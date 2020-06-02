@@ -6,6 +6,8 @@ import com.google.android.things.pio.Gpio
 import com.google.android.things.pio.GpioCallback
 import com.google.android.things.pio.PeripheralManager
 import com.google.android.things.userdriver.pio.GpioDriver
+import java.lang.IllegalArgumentException
+
 /**
  * 纯输入 硬件
  * */
@@ -20,7 +22,7 @@ class AM312_Driver(out: String)
         outGpio.setActiveType(Gpio.ACTIVE_HIGH)//高电平有效
     }
     override fun setValue(p0: Boolean) {
-        Log.i("AM312_Driver", "setValue")
+        throw IllegalArgumentException("当前输入设备不支持设置 value")
     }
 
     override fun setDirection(p0: Int) {
