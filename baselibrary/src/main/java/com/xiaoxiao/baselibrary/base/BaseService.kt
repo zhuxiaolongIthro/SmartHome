@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import java.util.concurrent.Executors
@@ -28,6 +29,7 @@ abstract class BaseService : Service() {
     }
     fun runOnWorkThread(task:()->Unit){
         threadPool.submit(Runnable {
+            Log.e("BaseService","runOnWorkThread : ${Thread.currentThread().name}")
             task.invoke()
         })
     }

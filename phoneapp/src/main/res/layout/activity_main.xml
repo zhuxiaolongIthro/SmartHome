@@ -4,54 +4,58 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".PhoneMainActivity">
 
     <TextView
-        android:gravity="center"
-        android:textSize="20sp"
-        android:text="当前角色"
         android:id="@+id/currentState"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="当前角色"
+        android:textSize="20sp" />
 
     <Button
-        android:textAllCaps="false"
         android:id="@+id/as_server"
-        android:text="作为服务端等待链接"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:text="作为服务端等待链接"
+        android:textAllCaps="false" />
+
     <Button
         android:id="@+id/scan_btn"
-        android:textAllCaps="false"
-        android:text="作为客户端开始扫描"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:text="作为客户端开始扫描"
+        android:textAllCaps="false" />
 
     <TextView
-        android:hint="收到的消息"
         android:id="@+id/result_tv"
         android:layout_width="match_parent"
-        android:layout_height="200dp"/>
+        android:layout_height="200dp"
+        android:hint="收到的消息" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <LinearLayout
-            android:layout_gravity="bottom"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical">
+
             <EditText
-                android:hint="输入内容"
                 android:id="@+id/input"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:hint="输入内容" />
+
             <Button
 
-                android:text="发送"
                 android:id="@+id/send_msg"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="发送" />
 
         </LinearLayout>
     </FrameLayout>

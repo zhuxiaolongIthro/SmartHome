@@ -8,10 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import com.xiaoxiao.baselibrary.ble.BleCenterService
-import com.xiaoxiao.baselibrary.ble.BleClientService
 import com.xiaoxiao.baselibrary.ble.IBleService
-import com.xiaoxiao.baselibrary.ble.IBleServiceCallback
-import com.xiaoxiao.baselibrary.wifip2p.WifiP2pService
+import com.xiaoxiao.baselibrary.wlan.WLANService
 import com.xiaoxiao.homecenter.services.PeripheralService
 
 /**
@@ -84,7 +82,7 @@ class MainActivity : AppCompatActivity() {
         val sensorIntent = Intent(this,PeripheralService::class.java)
         bindService(sensorIntent,peripheralConn,Service.BIND_AUTO_CREATE)
 
-        val wifiIntent = Intent(this,WifiP2pService::class.java)
+        val wifiIntent = Intent(this,WLANService::class.java)
         bindService(wifiIntent,wifip2pCoon,Service.BIND_AUTO_CREATE)
     }
 

@@ -1,0 +1,22 @@
+package com.xiaoxiao.phoneapp.demo
+
+import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.View
+import com.xiaoxiao.phoneapp.R
+
+class DemoMainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_demo_main)
+    }
+
+
+    fun bleService(v: View?){
+        startActivity(Intent(this,BleActivity::class.java))
+    }
+    fun wlanService(v:View?){
+        startActivity(Intent(this,WlanActivity::class.java))
+    }
+}

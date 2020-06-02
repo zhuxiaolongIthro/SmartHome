@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.xiaoxiao.baselibrary">
-
     <!-- ble -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -16,18 +15,18 @@
 
     <application>
         <service
+            android:name=".wlan.WLANService"
+            android:process="com.xiaoxiao.wlanService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
             android:name=".usb.UsbService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
         <service
             android:name=".cloud.CloudApiService"
             android:enabled="true"
             android:exported="true" />
-        <service
-            android:name=".wifip2p.WifiP2pService"
-            android:enabled="true"
-            android:exported="true"
-            android:process="com.xiaoxiao.wifiService" />
         <service
             android:name=".ble.BleCenterService"
             android:enabled="true"
