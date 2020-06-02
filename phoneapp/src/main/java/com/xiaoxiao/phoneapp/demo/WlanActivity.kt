@@ -8,6 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.View
+import android.widget.EditText
+import android.widget.TextView
 import com.xiaoxiao.baselibrary.ble.IBleService
 import com.xiaoxiao.baselibrary.ble.IBleServiceCallback
 import com.xiaoxiao.baselibrary.wlan.IWlanP2pServiceAidl
@@ -38,12 +41,19 @@ class WlanActivity : AppCompatActivity() {
     }
 
 
+    lateinit var inputEt :EditText
+    lateinit var resultTv:TextView
+    fun send(v: View?){
+        mWlanBinder.sendMessage(inputEt.text.toString())
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i("WlanActivity","onCreate :")
         setContentView(R.layout.activity_wlan)
+        inputEt = findViewById(R.id.input)
+        resultTv = findViewById(R.id.result_tv)
     }
 
     override fun onStart() {

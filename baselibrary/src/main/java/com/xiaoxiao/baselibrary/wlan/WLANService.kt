@@ -91,7 +91,16 @@ class WLANService : BaseService() {
          * 向已连接的peerDevice 发送消息
          * */
         override fun sendMessage(msg: String?) {
-            Log.i("WLANService", "sendMessage :")
+            Log.i("WLANService", "sendMessage : $msg")
+            if (msg == null) {
+                return
+            }
+
+            runOnWorkThread {
+                val write = mClientSocket?.getOutputStream()
+                write?.write(msg.toByteArray(Charsets.UTF_8))
+                write?.flush()
+            }
         }
 
         /**
