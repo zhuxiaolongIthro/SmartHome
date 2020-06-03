@@ -28,12 +28,12 @@
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name=".ble.BleCenterService"
+            android:name=".ble.BleService"
             android:enabled="true"
             android:exported="true"
             android:process="com.xiaoxiao.bleService" />
         <service
-            android:name=".ble.BleClientService"
+            android:name=".ble.BleService"
             android:enabled="true"
             android:exported="true"
             android:process="com.xiaoxiao.bleService" />

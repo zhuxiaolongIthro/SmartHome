@@ -14,7 +14,7 @@
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name="com.xiaoxiao.baselibrary.ble.BleCenterService"
+            android:name="com.xiaoxiao.baselibrary.ble.BleService"
             android:enabled="true"
             android:exported="true" />
 

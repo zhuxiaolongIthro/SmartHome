@@ -7,7 +7,7 @@ import android.content.ServiceConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
-import com.xiaoxiao.baselibrary.ble.BleCenterService
+import com.xiaoxiao.baselibrary.ble.BleService
 import com.xiaoxiao.baselibrary.ble.IBleService
 import com.xiaoxiao.baselibrary.wlan.WLANService
 import com.xiaoxiao.homecenter.services.PeripheralService
@@ -75,15 +75,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val intent = Intent(this, BleCenterService::class.java)
+        val intent = Intent(this, BleService::class.java)
 
         bindService(intent,bleConn,Service.BIND_AUTO_CREATE)
 
         val sensorIntent = Intent(this,PeripheralService::class.java)
         bindService(sensorIntent,peripheralConn,Service.BIND_AUTO_CREATE)
 
+        /* 树莓派不支持 P2P 连接
         val wifiIntent = Intent(this,WLANService::class.java)
-        bindService(wifiIntent,wifip2pCoon,Service.BIND_AUTO_CREATE)
+        bindService(wifiIntent,wifip2pCoon,Service.BIND_AUTO_CREATE)*/
     }
 
     override fun onDestroy() {

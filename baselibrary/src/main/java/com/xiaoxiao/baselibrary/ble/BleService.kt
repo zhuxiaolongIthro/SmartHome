@@ -23,7 +23,7 @@ import kotlin.collections.ArrayList
  * 2、作为中心设备 扫描外围蓝牙传感器设备，并发起链接
  * 因为可以认为没有操作界面 所以自动开启 服务模式
  * */
-class BleCenterService : BaseService(), BluetoothAdapter.LeScanCallback {
+class BleService : BaseService(), BluetoothAdapter.LeScanCallback {
 
     companion object {
         const val SERVICE_TRANSFER_MSG_UUID = "3518d48c-ea83-495c-922d-273a0d4e21ca"
@@ -44,22 +44,22 @@ class BleCenterService : BaseService(), BluetoothAdapter.LeScanCallback {
     private lateinit var mGattService :BluetoothGattService
     private lateinit var mNoticyCharacteristic:BluetoothGattCharacteristic
     private lateinit var mWriteCharacteristic: BluetoothGattCharacteristic
-
-    private var timer = Timer()
-    private val timerTask =object :TimerTask(){
-        override fun run() {
-            Log.i("BleCenterService","timer run")
-            for (device in connectedClientList) {
-
-                val service = mBleGattServer.getService(UUID.fromString(SERVICE_TRANSFER_MSG_UUID))
-                val characteristic =
-                    service.getCharacteristic(UUID.fromString(CHARTRANSFER_MSG_NOTIFY_UUID))
-                characteristic.value = "你也好".toByteArray()
-                mBleGattServer.notifyCharacteristicChanged(device,characteristic,true)
-            }
-
-        }
-    }
+//
+//    private var timer = Timer()
+//    private val timerTask =object :TimerTask(){
+//        override fun run() {
+//            Log.i("BleCenterService","timer run")
+//            for (device in connectedClientList) {
+//
+//                val service = mBleGattServer.getService(UUID.fromString(SERVICE_TRANSFER_MSG_UUID))
+//                val characteristic =
+//                    service.getCharacteristic(UUID.fromString(CHARTRANSFER_MSG_NOTIFY_UUID))
+//                characteristic.value = "你也好".toByteArray()
+//                mBleGattServer.notifyCharacteristicChanged(device,characteristic,true)
+//            }
+//
+//        }
+//    }
 
     /**
      * 广播接收器
@@ -70,19 +70,33 @@ class BleCenterService : BaseService(), BluetoothAdapter.LeScanCallback {
         }
 
     }
-
     private val mGattServerCallback = object : BluetoothGattServerCallback() {
+
+        /**
+         * 已经发送了通知
+         * */
         override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
             super.onNotificationSent(device, status)
-            Log.i("BleCenterService", "onNotificationSent")
-
+            when (status) {
+                BluetoothGatt.GATT_SUCCESS -> {
+                    Log.i("BleCenterService", "onNotificationSent success")
+                }
+                BluetoothGatt.GATT_FAILURE->{
+                    Log.i("BleCenterService", "onNotificationSent failure")
+                }
+            }
         }
-
+        /**
+         * 队列执行的 write 操作
+         * */
         override fun onExecuteWrite(device: BluetoothDevice?, requestId: Int, execute: Boolean) {
             super.onExecuteWrite(device, requestId, execute)
             Log.i("BleCenterService", "onExecuteWrite")
         }
 
+        /**
+         * 写入信息
+         * */
         override fun onCharacteristicWriteRequest(
             device: BluetoothDevice?,
             requestId: Int,
@@ -101,16 +115,19 @@ class BleCenterService : BaseService(), BluetoothAdapter.LeScanCallback {
                 offset,
                 value
             )
-            mBleGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, value)
+            Log.i("BleService","onCharacteristicWriteRequest requestId:$requestId offset $offset")
+            mBleGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, characteristic?.value?.size?:0, value)
             if (value != null) {
                 val string = String(value, Charset.defaultCharset())
-                Log.i("BleCenterService", "onCharacteristicWriteRequest $string")
+                Log.i("BleCenterService", "onCharacteristicWriteRequest  $string")
             } else {
                 Log.i("BleCenterService", "onCharacteristicWriteRequest empty value")
             }
 
         }
-
+        /**
+         * 读取信息
+         * */
         override fun onCharacteristicReadRequest(
             device: BluetoothDevice?,
             requestId: Int,
@@ -119,6 +136,7 @@ class BleCenterService : BaseService(), BluetoothAdapter.LeScanCallback {
         ) {
             super.onCharacteristicReadRequest(device, requestId, offset, characteristic)
             Log.i("BleCenterService", "onCharacteristicReadRequest")
+            mBleGattServer.sendResponse(device,requestId,BluetoothGatt.GATT_SUCCESS,characteristic?.value?.size?:0,characteristic?.value)
         }
 
         override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
@@ -129,8 +147,8 @@ class BleCenterService : BaseService(), BluetoothAdapter.LeScanCallback {
                     Log.i("BleCenterService","onConnectionStateChange 已连接")
                     if (device!=null) {
                         connectedClientList.add(device)
-                        timer = Timer()
-                        timer.schedule(timerTask,2000,2000)
+//                        timer = Timer()
+//                        timer.schedule(timerTask,2000,2000)
                     }
                 }
                 android.bluetooth.BluetoothProfile.STATE_DISCONNECTED -> {
@@ -143,7 +161,7 @@ class BleCenterService : BaseService(), BluetoothAdapter.LeScanCallback {
                                 iterator.remove()
                             }
                         }
-                        timer.cancel()
+//                        timer.cancel()
                     }
                 }
                 else -> {
@@ -280,18 +298,18 @@ class BleCenterService : BaseService(), BluetoothAdapter.LeScanCallback {
     }
 
     private fun buildServices(): BluetoothGattService {
-        mBleGattServer.clearServices()
-        mGattService = BluetoothGattService(
+        mBleGattServer.clearServices()//清空原有的services
+        mGattService = BluetoothGattService(//基本通信服务
             UUID.fromString(SERVICE_TRANSFER_MSG_UUID),
             BluetoothGattService.SERVICE_TYPE_PRIMARY
         )
-        mNoticyCharacteristic = BluetoothGattCharacteristic(
+        mNoticyCharacteristic = BluetoothGattCharacteristic(//基本订阅 特征，客户端通过这个获取订阅的消息
             UUID.fromString(CHARTRANSFER_MSG_NOTIFY_UUID),
             BluetoothGattCharacteristic.PROPERTY_NOTIFY,
             BluetoothGattCharacteristic.PERMISSION_READ
         )
 
-        mWriteCharacteristic = BluetoothGattCharacteristic(
+        mWriteCharacteristic = BluetoothGattCharacteristic(// 基本写入 特征，客户端通过这个向center 写入命令
             UUID.fromString(CHARTRANSFER_MSG_WRITE_UUID),
             BluetoothGattCharacteristic.PROPERTY_WRITE,
             BluetoothGattCharacteristic.PERMISSION_WRITE
