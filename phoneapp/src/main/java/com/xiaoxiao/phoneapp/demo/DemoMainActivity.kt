@@ -19,4 +19,7 @@ class DemoMainActivity : AppCompatActivity() {
     fun wlanService(v:View?){
         startActivity(Intent(this,WlanActivity::class.java))
     }
+    fun config(v:View?){
+        startActivity(Intent(this,ConfigReadActivity::class.java))
+    }
 }
