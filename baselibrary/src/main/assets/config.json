@@ -1,0 +1,9 @@
+{
+  "config": {
+    "commands": [
+      {
+        "code": 1,"body": {"action": 0,"params": ["a","b"]}
+      }
+    ]
+  }
+}

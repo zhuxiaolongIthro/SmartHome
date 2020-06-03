@@ -10,8 +10,7 @@ import android.net.wifi.p2p.WifiP2pManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
-import androidx.core.content.ContextCompat
-import com.xiaoxiao.baselibrary.ble.BleCenterService
+import com.xiaoxiao.baselibrary.ble.BleService
 import com.xiaoxiao.baselibrary.ble.IBleService
 import com.xiaoxiao.baselibrary.wlan.IWlanP2pServiceAidl
 import com.xiaoxiao.baselibrary.wlan.WLANService
@@ -66,19 +65,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val intent = Intent(this, BleCenterService::class.java)
+        val intent = Intent(this, BleService::class.java)
 
         bindService(intent,bleConn,Service.BIND_AUTO_CREATE)
 
         val sensorIntent = Intent(this,PeripheralService::class.java)
         bindService(sensorIntent,peripheralConn,Service.BIND_AUTO_CREATE)
 
-        val wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
-
-
-        if (!wifiManager.isP2pSupported) {
-            return
-        }
+        /* 树莓派不支持 P2P 连接
+        val wifiIntent = Intent(this,WLANService::class.java)
+        bindService(wifiIntent,wifip2pCoon,Service.BIND_AUTO_CREATE)*/
     }
 
     override fun onDestroy() {
