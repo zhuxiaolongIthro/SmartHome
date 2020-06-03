@@ -8,7 +8,7 @@ interface IPackager {
 
     fun splitMessage(longMsg:String):ArrayList<ByteArray>
 
-    fun needPackage():Boolean
+    fun needPackage(byteArray: ByteArray):Boolean
 
     fun packageMessage(packages:ArrayList<ByteArray>):ByteArray
 
