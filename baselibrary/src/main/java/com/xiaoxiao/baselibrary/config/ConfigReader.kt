@@ -1,21 +1,13 @@
 package com.xiaoxiao.baselibrary.config
 
 import android.content.Context
-import android.content.res.AssetManager
-import android.content.res.Resources
-import android.content.res.XmlResourceParser
-import android.util.Log
 import androidx.collection.ArrayMap
-import com.google.gson.Gson
-import org.xmlpull.v1.XmlPullParserFactory
-import java.io.File
 import java.io.InputStreamReader
-import java.lang.StringBuilder
 
 class ConfigReader {
-    companion object{
+    companion object {
         //  命令码与命令json串 映射表
-        val commandTable = ArrayMap<Int,Command>()
+        val commandTable = ArrayMap<Int, Command>()
     }
 
 //    /**
@@ -49,7 +41,7 @@ class ConfigReader {
 //        }
 //    }
 
-    fun readFromAssets(context: Context,configFile:String){
+    fun readFromAssets(context: Context, configFile: String) {
         val assetsManager = context.resources.assets
         val inputStream = assetsManager.open(configFile)
         val stringBuilder = StringBuilder()
@@ -57,15 +49,15 @@ class ConfigReader {
         for (readLine in isReader.readLines().apply { inputStream.close() }) {
             stringBuilder.append(readLine)
         }
-        val gson = Gson()
-
-        val configBean = gson.fromJson<ConfigBean>(stringBuilder.toString(), ConfigBean::class.java)
-
-        configBean?.let {bean->
-            for (command in bean.config.commands) {
-                commandTable.put(command.code,command)
-            }
-        }
+//        val gson = Gson()
+//
+//        val configBean = gson.fromJson<ConfigBean>(stringBuilder.toString(), ConfigBean::class.java)
+//
+//        configBean?.let { bean ->
+//            for (command in bean.config.commands) {
+//                commandTable.put(command.code, command)
+//            }
+//        }
     }
 
 

@@ -1,9 +1,6 @@
 package com.xiaoxiao.baselibrary.bluetooth
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothServerSocket
-import android.bluetooth.BluetoothSocket
+import android.bluetooth.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -15,6 +12,8 @@ import android.os.Message
 import android.util.Log
 import com.xiaoxiao.baselibrary.base.BaseService
 import java.io.File
+import java.util.*
+
 /**
  * 首先选择要传输的文件，然后选择目标设备，执行连接，连接成功后开始发送文件，发送成功后断开连接
  * */
@@ -25,50 +24,81 @@ class ClassicBluetoothService : BaseService() {
 
     companion object{
         const val DEFAULT_DISCOVER_TIMEOUT=30
+        const val SERVER_SOCKET_UUID = "f74829c3-e67e-4bae-9241-95887a7205cd"
     }
 
 
     var configFilePath :String?=null
     var clientDeviceMac:String?=null
     private val iBinder = object : IClassicBtServiceAidl.Stub() {
-        override fun sendFile(path: String?, mac: String?) {
-            val file = File(path)
-            if (file.exists().not()) {
-                mCallback?.onFileSended(0)//文件不存在
-            }
-            configFilePath = path
-            clientDeviceMac = mac
-            discoverDevice()
+        override fun startAdversitise() {
+            TODO("Not yet implemented")
+        }
+
+        override fun connectToService(mac: String?, uuid: String?) {
+            TODO("Not yet implemented")
         }
 
         override fun registCallabck(callback: IClassicServiceCallback?) {
             mCallback = callback
         }
 
-        override fun connectToDevice(mac: String?) {
-
+        override fun sendMessage(msg: String?) {
+            TODO("Not yet implemented")
         }
+
+        override fun sendFile(path: String?) {
+            TODO("Not yet implemented")
+        }
+
+        override fun discoverServer(mac: String?, uuid: String?) {
+            TODO("Not yet implemented")
+        }
+
+        override fun startListener() {
+            TODO("Not yet implemented")
+        }
+
 
     }
 
     var mCallback: IClassicServiceCallback? = null
 
 
-    private val mWorkThread = HandlerThread("bluetoothwork").apply { start() }
-    private val mWorkHandler = object : Handler(mWorkThread.looper) {
+    private val mReceiveThread = HandlerThread("receiveSocket").apply { start() }
+    private val mSendThread = HandlerThread("sendSocket").apply { start() }
 
 
+    private val receiveHandler = object :Handler(mReceiveThread.looper){
         override fun handleMessage(msg: Message) {
             super.handleMessage(msg)
+            when (msg.what) {
+                CONNECT -> {//开始连接
+                    //创建socket
+                    mServiceBluetoothSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("文件", UUID.fromString(SERVER_SOCKET_UUID))
+                    //等待客户端连接
+                    mServiceBluetoothSocket.accept()
+                }
+                else -> {
+                }
+            }
 
 
         }
     }
+    private val mSendHandler = object :Handler(mSendThread.looper){
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+        }
+    }
+
 
     lateinit var mBluetoothAdapter: BluetoothAdapter
+    lateinit var mBluetoothManager: BluetoothManager
 
     lateinit var mServiceBluetoothSocket:BluetoothServerSocket
     var clientSocket:BluetoothSocket?=null
+    var targetDevice:BluetoothDevice?=null
 
 
     private val bluetoothReceiver = object : BroadcastReceiver() {
@@ -83,26 +113,30 @@ class ClassicBluetoothService : BaseService() {
                     }
                     BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {//蓝牙发现行为 结束
                         Log.i("ClassicBluetoothService","onReceive")
+                        receiveHandler.sendEmptyMessage(CONNECT)
                     }
                     BluetoothDevice.ACTION_FOUND -> {//发现设备
                         Log.i("ClassicBluetoothService","onReceive")
                         val foundedDevice =
                             intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
                         if (foundedDevice.address.equals(clientDeviceMac)) {
-
+                            targetDevice = foundedDevice
                         }
                     }
                 }
             }
-
         }
+    }
+    private fun connectDevice(device: BluetoothDevice){
+        val createInsecureRfcommSocketToServiceRecord =
+            device.createInsecureRfcommSocketToServiceRecord(UUID.fromString(SERVER_SOCKET_UUID))
 
     }
 
 
     private fun discoverDevice() {
         mBluetoothAdapter.startDiscovery()
-        mWorkHandler.postDelayed(Runnable {
+        receiveHandler.postDelayed(Runnable {
             mBluetoothAdapter.cancelDiscovery()
         }, DEFAULT_DISCOVER_TIMEOUT*1000L)
     }
@@ -111,7 +145,7 @@ class ClassicBluetoothService : BaseService() {
     override fun onCreate() {
         super.onCreate()
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-
+        mBluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val intentFilter = IntentFilter()
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
         intentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
