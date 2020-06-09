@@ -26,6 +26,9 @@ class DemoMainActivity : AppCompatActivity() {
         startActivity(Intent(this,ConfigReadActivity::class.java))
     }
     fun btService(v:View?){
+        startActivity(Intent(this,ServerBtActivity::class.java))
+    }
+    fun btClient(v: View?){
         startActivity(Intent(this,BluetoothActivity::class.java))
     }
 }

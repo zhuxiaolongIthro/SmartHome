@@ -41,14 +41,11 @@ class BluetoothConnection(
 
     lateinit var clientSocket: BluetoothSocket
 
-    val receiveThread: ReceiveThread by lazy {
-        ReceiveThread()
+    val receiveThread: MessageHandlerThread by lazy {
+        MessageHandlerThread("receiveThread")
     }
     val sendThread: MessageHandlerThread by lazy {
         MessageHandlerThread("sendThread")
-    }
-    val messageHandlerThread: MessageHandlerThread by lazy {
-        MessageHandlerThread("listenThread")
     }
 
     /**
@@ -64,6 +61,7 @@ class BluetoothConnection(
             clientSocket.connect() //主动链接服务端  服务端会在accept中获取
             /*链接成功*/
             buildSocketStreams(clientSocket)
+            /*释放线程*/
         }
     }
 
@@ -74,6 +72,7 @@ class BluetoothConnection(
             /*链接成功*/
             buildSocketStreams(clientSocket)
             callback.invoke(clientSocket)
+            /*释放线程*/
         }
     }
 
@@ -85,7 +84,7 @@ class BluetoothConnection(
     }
 
     fun startListenerMsg(listener: MessageListener) {
-        messageHandlerThread.post {
+        receiveThread.post {
             while (true) {
                 try {
                     //阻塞读取数据
@@ -121,7 +120,6 @@ class BluetoothConnection(
             ConnectionState.WAITING->{//等待接入
                 receiveThread.quit()
                 sendThread.quit()
-                messageHandlerThread.quit()
             }
             ConnectionState.CONNECTING->{//正在连接中
 

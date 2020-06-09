@@ -116,7 +116,6 @@ class ClassicBtClientService : ClassicBluetoothService() {
                         mCallback?.onDiscoverFinished(callbackList)
                     }
                     BluetoothDevice.ACTION_FOUND -> {//发现设备
-                        Log.i("ClassicBluetoothService","onReceive 发现设备")
                         synchronized(serviceList){
                             val foundedDevice =
                                 intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)

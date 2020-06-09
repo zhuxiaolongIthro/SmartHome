@@ -147,6 +147,7 @@ class ClassicBtServerService : ClassicBluetoothService() {
     }
 
     private fun waitingClient() {
+        Log.i("ClassicBtServerService","waitingClient :")
         val bluetoothConnection = BluetoothConnection(bluetoothServerSocket = serverSocket)
         bluetoothConnection.waitingClient { socket ->
             conenctedSocketList[socket.remoteDevice.address] = bluetoothConnection
@@ -154,6 +155,7 @@ class ClassicBtServerService : ClassicBluetoothService() {
         }
     }
     private fun release(){
+        Log.i("ClassicBtServerService","release :")
         for ((key,connection) in conenctedSocketList) {
             connection.disconnect()
         }
