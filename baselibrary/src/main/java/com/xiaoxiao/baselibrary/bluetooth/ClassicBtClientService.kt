@@ -1,5 +1,6 @@
 package com.xiaoxiao.baselibrary.bluetooth
 
+import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -11,30 +12,62 @@ import android.os.IBinder
 import android.text.TextUtils
 import android.util.Log
 import com.xiaoxiao.baselibrary.base.BaseService
-
 /**
- * 首先选择要传输的文件，然后选择目标设备，执行连接，连接成功后开始发送文件，发送成功后断开连接
+ * 作为服务端蓝牙角色
  * */
-abstract class ClassicBluetoothService : BaseService() {
-    var mCallback: IClassicServiceCallback? = null
+class ClassicBtClientService : ClassicBluetoothService() {
+    private val iBinder = object : IBtClientAidl.Stub() {
+        override fun connectToService(mac: String?, uuid: String?) {
+            Log.i("ClassicBluetoothService","connectToService : $mac")
 
-    lateinit var mBluetoothAdapter: BluetoothAdapter
-    lateinit var mBluetoothManager: BluetoothManager
+            runOnWorkThread {
+                for ((key_mac, device) in serviceList) {
+                    if (TextUtils.equals(key_mac,mac)) {
+                        val bluetoothConnection = BluetoothConnection()
+                        conenctList.put(key_mac,bluetoothConnection)
+                        bluetoothConnection.connectToServer(device)
+                        bluetoothConnection.startListenerMsg {msg: String? ->
+                            Log.i("ClassicBluetoothService","connectToService : 收消息回调 $msg")
+                        }
+                        break
+                    }
+                }
+            }
+        }
 
-    private val serviceList = HashMap<String,BluetoothDevice>()
+        override fun registCallabck(callback: IClassicServiceCallback?) {
+            mCallback = callback
+        }
+
+        override fun sendMessage(msg: String?) {
+            Log.i("ClassicBluetoothService","sendMessage :")
+            if (TextUtils.isEmpty(msg)) {
+                return
+            }
+            for ((key, connect) in conenctList) {
+                connect.sendMsg(msg!!)
+            }
+        }
+
+        override fun sendFile(path: String?) {
+            Log.i("ClassicBluetoothService","sendFile :")
+        }
+
+        override fun discoverServer(mac: String?, uuid: String?) {
+            Log.i("ClassicBluetoothService","discoverServer :")
+            mBluetoothAdapter.startDiscovery()
+            mainHandler.postDelayed({
+                mBluetoothAdapter.cancelDiscovery()
+            },10000)
+        }
+        override fun disconnect() {
+            Log.i("ClassicBluetoothService","disconnect :")
+        }
+    }
+
+    private val serviceList = HashMap<String, BluetoothDevice>()
 
     private val conenctList = HashMap<String,BluetoothConnection>()
-
-
-    protected val actions = arrayListOf<String>(
-        BluetoothAdapter.ACTION_STATE_CHANGED,
-        BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED,
-        BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE,
-        BluetoothAdapter.ACTION_DISCOVERY_STARTED,
-        BluetoothAdapter.ACTION_DISCOVERY_FINISHED,
-        BluetoothDevice.ACTION_BOND_STATE_CHANGED,
-        BluetoothDevice.ACTION_FOUND
-    )
 
     private val bluetoothReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -42,6 +75,12 @@ abstract class ClassicBluetoothService : BaseService() {
                 when (intent?.action) {
                     BluetoothAdapter.ACTION_STATE_CHANGED -> {//蓝牙硬件状态改变
                         Log.i("ClassicBluetoothService","onReceive 蓝牙改变")
+                        when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,-1)) {
+                            BluetoothAdapter.STATE_ON -> { }
+                            BluetoothAdapter.STATE_TURNING_ON -> { }
+                            BluetoothAdapter.STATE_OFF -> { }
+                            BluetoothAdapter.STATE_TURNING_OFF -> { }
+                        }
                     }
                     BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED->{
                         Log.i("ClassicBluetoothService","onReceive :链接状态改变")
@@ -92,6 +131,27 @@ abstract class ClassicBluetoothService : BaseService() {
         super.onCreate()
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         mBluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val intentFilter = IntentFilter()
+        for (action in actions) {
+            intentFilter.addAction(action)
+        }
+        registerReceiver(bluetoothReceiver, intentFilter)
     }
 
+    override fun onBind(intent: Intent?): IBinder? {
+        return iBinder
+    }
+
+    override fun onRebind(intent: Intent?) {
+        super.onRebind(intent)
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        return super.onUnbind(intent)
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver(bluetoothReceiver)
+        super.onDestroy()
+    }
 }

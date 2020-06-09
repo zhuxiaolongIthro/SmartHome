@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.xiaoxiao.baselibrary">
+
     <!-- ble -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -14,11 +15,20 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <application>
+        <service android:name=".bluetooth.ClassicBtClientService"
+            android:process="com.xiaoxiao.btclient"
+            android:enabled="true"
+            android:exported="true"/>
+        <service
+            android:process="com.xiaoxiao.btserver"
+            android:name=".bluetooth.ClassicBtServerService"
+            android:enabled="true"
+            android:exported="true"/>
         <service
             android:name=".wlan.WLANService"
-            android:process="com.xiaoxiao.wlanService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            android:process="com.xiaoxiao.wlanService" />
         <service
             android:name=".usb.UsbService"
             android:enabled="true"
@@ -33,10 +43,10 @@
             android:exported="true"
             android:process="com.xiaoxiao.bleService" />
         <service
-            android:name=".ble.BleService"
+            android:name=".bluetooth.ClassicBluetoothService"
             android:enabled="true"
             android:exported="true"
-            android:process="com.xiaoxiao.bleService" />
+            android:process="com.xiaoxiao.btService"/>
     </application>
 
 </manifest>
